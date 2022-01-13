@@ -1,0 +1,114 @@
+.MODEL SMALL
+.STACK 100h
+.DATA
+    MSG1 DB 13,10,'NHAP CHIEU DAI HCN: $'
+    MSG2 DB 13,10,'NHAP CHIEU RONG HCN: $'
+    MSG3 DB 13,10,'DIEN TICH HINH CHU NHAT LA: $'
+    MSG4 DB 13,10,'CHU VI HINH CHU NHAT LA: $'
+    
+    CHIEUDAI DB ?
+    CHIEURONG DB ? 
+    TONG DW ?
+.CODE
+   MOV AX,@DATA
+   MOV DS,AX    
+   
+; NHAP CHIEU DAI   
+   LEA DX,MSG1
+   CALL NHAPTHAPPHAN 
+   MOV CHIEUDAI, AL 
+   
+; NHAP CHIEU RONG   
+   LEA DX,MSG2
+   CALL NHAPTHAPPHAN
+   MOV CHIEURONG,AL
+   
+; TINH DIEN TICH   
+   LEA DX,MSG3  
+   MOV AL,CHIEUDAI
+   MOV BL,CHIEURONG
+   MUL BL ;AX=AL*BL 
+   
+   MOV TONG, AX
+   CALL XUATTHAPPHAN
+ 
+; TINH CHU VI  
+   LEA DX,MSG4  
+   MOV AL,CHIEUDAI
+   ADD AL,CHIEURONG   ;CONG THUC TINH CHU VI: (DAI+RONG)*2
+   MOV BL,2
+   MUL BL   
+   
+   MOV TONG, AX
+   CALL XUATTHAPPHAN
+   
+   MOV AH,4Ch
+   INT 21h 
+; THU TUC     
+
+NHAPTHAPPHAN PROC 
+   RESET:   
+   MOV AH,9h
+   INT 21h
+   
+   MOV TONG,0
+
+INPUT:   
+   MOV AH,1
+   INT 21h
+    
+   
+   CMP AL,0Dh
+   JE  EXIT
+   
+   CMP AL,'0'
+   JB RESET
+   CMP AL,'9'
+   JA RESET
+   
+   SUB AL,30h
+   
+   MOV CL,AL 
+   XOR CH,CH
+   
+   MOV AX,TONG
+   MOV DX,10
+   MUL DX ; => AX = AX * DX=TONG *10
+   ADD AX,CX 
+   MOV TONG,AX
+   JMP INPUT
+EXIT:
+    MOV AX, TONG   
+    RET
+NHAPTHAPPHAN ENDP  
+
+XUATTHAPPHAN PROC     
+   MOV AH,9h
+   INT 21h
+
+   MOV AX, TONG   
+   MOV BX,10 
+   XOR CX,CX
+   
+XULY_STACK:
+   XOR DX, DX   
+   DIV BX ; => AX=AX/BX=TONG/10
+   
+   PUSH DX
+   INC CX
+   
+   CMP AX,0
+   JA XULY_STACK
+   
+PRINT:
+   POP DX
+   ADD DX,30h
+   MOV AH,2h
+   INT 21h     
+   LOOP PRINT
+   
+      
+   JMP INPUT       
+    RET
+XUATTHAPPHAN ENDP
+END               

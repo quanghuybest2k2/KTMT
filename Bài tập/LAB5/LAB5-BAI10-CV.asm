@@ -1,0 +1,77 @@
+.MODEL SMALL
+.STACK 100h
+.DATA
+    LEN DB ?
+    BRE DB ?
+    RES DB 10 DUP ('$')
+    MSG1 DB 10,13,"NHAP CHIEU DAI HINH CHU NHAT: $"
+    MSG2 DB 10,13,"NHAP CHIEU RONG HINH CHU NHAT: $"
+    MSG3 DB 10,13,"CHU VI CUA HINH CHU NHAT LA: $"
+.CODE
+ASSUME DS:DATA,CS:CODE
+START:
+
+    MOV AX,@DATA
+    MOV DS,AX
+
+    LEA DX,MSG1
+    MOV AH,9
+    INT 21H
+
+    MOV AH,1
+    INT 21H
+
+    SUB AL,30H
+    MOV AH,0
+    MOV BL,2
+    MUL BL
+    MOV LEN,AL
+    
+    LEA DX,MSG2
+    MOV AH,9
+    INT 21H 
+    
+    MOV AH,1
+    INT 21H 
+    
+    SUB AL,30H
+    MOV AH,0
+    MOV BL,2
+    MUL BL
+    MOV BRE,AL 
+    
+    ADD AL,LEN
+    LEA SI,RES
+    
+    CALL HEX2DEC 
+    
+    LEA DX,MSG3
+    MOV AH,9
+    INT 21H 
+    
+    LEA DX,RES
+    MOV AH,9
+    INT 21H
+    
+    MOV AH,4CH
+    INT 21H
+
+  HEX2DEC PROC NEAR
+    MOV CX,0
+    MOV BX,10
+    LOOP1: MOV DX,0
+    DIV BX
+    ADD DL,30H
+    PUSH DX
+    INC CX
+    CMP AX,9
+    JG LOOP1
+    ADD AL,30H
+    MOV [SI],AL
+   LOOP2: POP AX
+    INC SI
+    MOV [SI],AL
+   LOOP LOOP2
+  RET
+ HEX2DEC ENDP 
+END START
